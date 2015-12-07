@@ -23,6 +23,11 @@ public:
 	void Decode(const std::vector<std::string>& files) 
 	{
 		std::vector<std::string>::const_iterator it = files.begin();
+		for (int i = 0; i < files.size(); i++)
+		{
+			std::cout << files[i] << endl;
+		}
+
 		std::vector<slib::Field<2,float>> images;
 		if (m_options.horizontal) 
 		{
@@ -57,8 +62,14 @@ public:
 			generate_mask(1);
 
 			images.resize(m_options.num_fringes);
+			int numImages = m_options.get_num_bits(0) * 2 + m_options.get_num_bits(1) * 2 + m_options.num_fringes * 2;
 			for (int i=0; i<m_options.num_fringes; i++)
-				slib::image::Read(images[i],*it++);
+			{
+				string path = files[numImages - m_options.num_fringes + i];
+				std::cout << path << std::endl;
+				//slib::image::Read(images[i],*it++);
+				slib::image::Read(images[i], path);
+			}
 
 			decode_phase(images,1);
 

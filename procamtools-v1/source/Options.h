@@ -9,6 +9,10 @@
 #include "MiscUtil.h"
 #include "IniFile.h"
 
+//Yang
+#include <iostream>
+using namespace std;
+
 struct options_t
 {
 // projector dimension
@@ -61,6 +65,7 @@ struct options_t
 		intensity_threshold = ini.GetFloat("reconstruction","threshold");
 		nsamples = ini.GetInt("reconstruction","nsamples");
 
+		std::cout << num_fringes << endl;
 		ini.Dump();
 	}
 
