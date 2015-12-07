@@ -8,12 +8,16 @@
 #pragma once
 
 // http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor/
-#pragma comment(lib,"mkl_c_dll.lib")
+//#pragma comment(lib,"mkl_c_dll.lib")   //Yang has commented.
 
 #undef small // conflict with "rpcndr.h" used in MFC
-#include <mkl_lapack.h>
+//#include <mkl_lapack.h>
+#include "mkl_lapack.h"// Yang modified.
 
 #include "MathBaseUtil.h"
+
+//Yang added: for error: 'max' : is not a member of 'std' 
+#include <algorithm>
 
 #undef min
 #undef max

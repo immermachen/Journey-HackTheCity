@@ -13,6 +13,9 @@
 #include "BmpUtil.h"
 #include "Field.h"
 
+//Yang added: for error: 'max' : is not a member of 'std' 
+#include <algorithm>
+
 namespace slib
 {
 namespace image
