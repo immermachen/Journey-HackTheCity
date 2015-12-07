@@ -143,6 +143,7 @@ int set_options(int argc, char *argv[])
 			break;
 		case 't':
 			m_distortion_angle = atof(argv[argi+1]);
+			std::cout << m_distortion_angle << std::endl;
 			argi+=2;
 			break;
 		case 'v':
@@ -170,6 +171,26 @@ int main(int argc, char* argv[])
 {
 	try
 	{
+		//Yang: Debug		
+		//argv[0] = "-o";
+		argv[1] = "-t";
+		argv[2] = argv[2];
+		argv[3] = "-v";
+		argv[4] = "v.map";
+		argv[5] = "h.map";
+		argv[6] = "reliable.bmp";
+		argv[7] = "options.ini";
+		argv[8] = "cam-intrinsic.txt";
+		argv[9] = "cam-distortion.txt";
+		argv[10] = "pro-intrinsic.txt";
+		argv[11] = "pro-distortion.txt";
+		argv[12] = "pro-extrinsic.txt";
+		argc = 13;
+
+		for (int i = 0; i < argc; i++)
+		{
+			std::cout << "Load parameters: " << i  << ": "<< argv[i] << std::endl;
+		}
 		// parse commandline options
 		int argi = set_options(argc, argv);
 

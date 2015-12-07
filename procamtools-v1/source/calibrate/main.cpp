@@ -31,15 +31,20 @@ int main(int argc, char *argv[])
 	try 
 	{
 		// parse commandline options
-		if (argc!=5) print_usage(argv[0]);
+		//if (argc!=5) print_usage(argv[0]);
 
 		// load correspondences estimated by decode program 
-		slib::Field<2,float> horizontal(argv[2]);
-		slib::Field<2,float> vertical(argv[3]);  
+		//slib::Field<2,float> horizontal(argv[2]);
+		//slib::Field<2,float> vertical(argv[3]);  
+		slib::Field<2, float> horizontal("h.map");
+		slib::Field<2, float> vertical("v.map");
+		
 		slib::Field<2,float> mask;  
-		slib::image::Read(mask, argv[4]);
+		//slib::image::Read(mask, argv[4]);
+		slib::image::Read(mask, "reliable.bmp");
 
-		CProCamCalibrate calib(argv[1]);
+		//CProCamCalibrate calib(argv[1]);
+		CProCamCalibrate calib("options.ini");
 		calib.Calibrate(horizontal,vertical,mask);
 
 		calib.WriteCamIntrinsic("cam-intrinsic.txt");
