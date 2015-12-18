@@ -129,7 +129,44 @@ void DecodePhaseCodeImages(const std::vector<Field<2,float>> &images, Field<2,fl
 		}
 	}
 }
+// generate phase image from moire pattern images. Yang: add calculation of Modulation
+inline
+void DecodePhaseCodeImages(const std::vector<Field<2, float>> &images, Field<2, float>& result, Field<2, float>& modulation)
+{
+	const CVector<2, int>& size = images[0].size();
+	const int nphases = images.size();
 
+	CDynamicMatrix<float> mat(nphases, 3);
+	for (int r = 0; r < nphases; r++)
+	{
+		mat(r, 0) = cos(2 * M_PI * r / nphases);
+		mat(r, 1) = sin(2 * M_PI * r / nphases);
+		mat(r, 2) = 1;
+	}
+	mat = GetPseudoInverse(mat);
+
+	result.Initialize(size);
+	
+	modulation.Initialize(size);
+
+	for (int y = 0; y < size[1]; y++)
+	{
+		for (int x = 0; x < size[0]; x++)
+		{
+			CDynamicVector<float> vec(nphases);
+			for (int r = 0; r < nphases; r++)
+				vec[r] = images[r].cell(x, y);
+			vec = mat * vec;
+			float A = sqrt(vec[0] * vec[0] + vec[1] * vec[1]);
+			float phi = atan2(vec[0] / A, vec[1] / A);
+			float m = vec[2];
+			while (phi < 0)
+				phi += 2 * M_PI;
+			result.cell(x, y) = phi / (2 * M_PI);
+			modulation.cell(x, y) = sqrt((vec[4] - vec[2])*(vec[4] - vec[2]) + (vec[1] - vec[3])*(vec[1] - vec[3]));
+		}
+	}
+}
 //------------------------------------------------------------
 // phase unwrapping
 //------------------------------------------------------------

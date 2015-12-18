@@ -102,6 +102,11 @@ public:
 		m_phase_map[direction].Write(filename);
 	}
 
+	//Yang
+	void WriteModulation(int direction, const std::string& filename) const {
+		m_modulation_map[direction].Write(filename);
+	}
+
 	const slib::Field<2,float>& GetMask(void) const { 
 		if (m_options.horizontal) 
 			return m_mask[0];
@@ -166,7 +171,9 @@ private:
 
 	void decode_phase(const std::vector<slib::Field<2,float>>& images, int direction)
 	{
-		DecodePhaseCodeImages(images, m_phase_map[direction]);
+		//Yang
+		//DecodePhaseCodeImages(images, m_phase_map[direction]);
+		DecodePhaseCodeImages(images, m_phase_map[direction], m_modulation_map[direction]);
 
 		UnwrapPhase(m_phase_map[direction], m_options.fringe_interval*m_options.num_fringes, m_gray_map[direction], m_phase_map[direction], m_phase_error[direction]);
 	}
@@ -221,6 +228,7 @@ private:
 	options_t m_options;
 	slib::Field<2,float> m_gray_map[2];
 	slib::Field<2,float> m_phase_map[2];
+	slib::Field<2, float> m_modulation_map[2];  //Yang
 	slib::Field<2,int> m_gray_error[2];
 	slib::Field<2,float> m_phase_error[2]; // also used as reliable mask
 	slib::Field<2,float> m_mask[2];
