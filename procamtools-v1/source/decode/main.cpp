@@ -30,21 +30,27 @@ int main(int argc, char *argv[])
 		//CDecode decode(argv[1]);  
 		
 		//Loop all captured images
-		for (int d = 1; d <= 16; d++)
+		//TODO d: means how many sets of images, now just use 1 time. 
+		for (int d = 0; d < 2; d++)
 		{
 			CDecode decode(option);
 			int numImages = option.get_num_bits(0) * 2 + option.get_num_bits(1) * 2 + option.num_fringes * 2;
 
 			std::vector<std::string> files(numImages);
 			std::ostringstream dir;
-			dir << "aCam1-";
-			dir << d;
-			dir << "/";
+			//dir << "aCam1-";
+			//dir << d;
+			//dir << "/";
+			dir << "D:/data/";
+			//string path = dir.str();// "aCam1-/Capture-";
 			string path = dir.str();// "aCam1-/Capture-";
+
+			std::cout << "path = " << path << ":  numImages=" << numImages << std::endl;
+
 			for (int i = 0; i < numImages; i++)
 			{
 				std::ostringstream oss;
-				oss << path << "Capture-";
+				oss << path << d <<"-";
 				if (i < 10)
 					oss << "0";
 				oss << i << ".bmp";

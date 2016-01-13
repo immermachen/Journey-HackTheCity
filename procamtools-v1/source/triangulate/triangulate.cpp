@@ -171,119 +171,246 @@ int main(int argc, char* argv[])
 {
 	try
 	{
-		//Yang: Debug		
-		//argv[0] = "-o";
-		argv[1] = "-t";
-		argv[2] = argv[2];
-		argv[3] = "-v";
-		argv[4] = "v.map";
-		argv[5] = "h.map";
-		argv[6] = "reliable.bmp";
-		argv[7] = "options.ini";
-		argv[8] = "cam-intrinsic.txt";
-		argv[9] = "cam-distortion.txt";
-		argv[10] = "pro-intrinsic.txt";
-		argv[11] = "pro-distortion.txt";
-		argv[12] = "pro-extrinsic.txt";
-		argc = 13;
 
-		for (int i = 0; i < argc; i++)
 		{
-			std::cout << "Load parameters: " << i  << ": "<< argv[i] << std::endl;
-		}
-		// parse commandline options
-		int argi = set_options(argc, argv);
+			// output filename
+			m_plyfilename = "decoded//0mesh.ply";
+			//Yang: Debug		
+			//argv[0] = "-o";
+			argv[1] = "-t";
+			argv[2] = argv[2];
+			argv[3] = "-v";
+			argv[4] = "decoded//0v.map";
+			argv[5] = "decoded//0h.map";
+			argv[6] = "decoded//0reliable.bmp";
+			argv[7] = "decoded//0options.ini";
+			argv[8] = "decoded//0cam-intrinsic.txt";
+			argv[9] = "decoded//0cam-distortion.txt";
+			argv[10] = "decoded//0pro-intrinsic.txt";
+			argv[11] = "decoded//0pro-distortion.txt";
+			argv[12] = "decoded//0pro-extrinsic.txt";
+			argc = 13;
 
-		// horizontal and vertical correspondences between projector and camera
-		Field<2,float> horizontal, vertical, mask;
-		horizontal.Read(argv[argi++]);
-		if (m_vmapfilename)
-			vertical.Read(m_vmapfilename);
-		image::Read(mask, argv[argi++]);
-		options.load(argv[argi++]);
-		CVector<2,double>
-			cod1=make_vector<double>((options.projector_width+1)/2.0,options.projector_height*options.projector_horizontal_center),
-			cod2=(make_vector(1.0,1.0)+mask.size())/2;
-
-		// intrinsic matrices of projector and camera
-		CMatrix<3,3,double> matKpro, matKcam;
-		double xi1,xi2;
-		FILE*fr;
-		matKcam.Read(argv[argi++]);
-		fr=fopen(argv[argi++],"rb");
-		if (!fr) throw std::runtime_error("failed to open camera distortion");
-		fscanf(fr,"%lf",&xi2);
-		fclose(fr);
-		matKpro.Read(argv[argi++]);
-		fr=fopen(argv[argi++],"rb");
-		if (!fr) throw std::runtime_error("failed to open projector distortion");
-		fscanf(fr,"%lf",&xi1);
-		fclose(fr);
-
-		// extrinsic matrices of projector and camera
-		CMatrix<3,4,double> proRt, camRt;
-		proRt.Read(argv[argi++]);
-		camRt = make_diagonal_matrix(1,1,1).AppendCols(make_vector(0,0,0));//CMatrix<3,4,double>::GetIdentity(); // reconstruction is in camera coordinate frame
-
-		// compute projection matrices of projector and camera
-		std::vector<CMatrix<3,4,double>> matrices(2);
-		matrices[0] = matKcam * camRt; // camera
-		matrices[1] = matKpro * proRt; // projector
-
-		// fundamental matrix
-		CMatrix<3,3,double> matR;
-		CVector<3,double> vecT;
-		matR.Initialize(proRt.ptr());
-		vecT.Initialize(proRt.ptr()+9);
-		CMatrix<3,3,double> matF = transpose_of(inverse_of(matKpro)) * GetSkewSymmetric(vecT) * matR * inverse_of(matKcam);
-
-		// triangulate 3d points
-		std::vector<CVector<3,double>> result;
-		for (int y=0; y<horizontal.size(1); y++)
-		{
-			if (y % (horizontal.size(1)/100) == 0)
-				printf("\rtriangulation: %d%% done", 100*y/horizontal.size(1));
-
-			int nbehind=0;
-			for (int x=0; x<horizontal.size(0); x++)
+			for (int i = 0; i < argc; i++)
 			{
-				if (mask.cell(x,y))
-				{
-					// 2D correspondence
-					std::vector<CVector<2,double>> p2d(2);
-
-					// camra coordinate
-					slib::fmatrix::CancelRadialDistortion(xi2,cod2,make_vector<double>(x,y),p2d[0]);
-
-					// projector coordinate
-					double proj_y;
-					if (m_vmapfilename)
-					{
-						proj_y = vertical.cell(x,y);
-					}
-					else
-					{
-						CVector<3,double> epiline = matF * GetHomogeneousVector(p2d[0]);
-						proj_y = -(epiline[0] * horizontal.cell(x,y) + epiline[2]) / epiline[1];
-					}
-					slib::fmatrix::CancelRadialDistortion(xi1,cod1,make_vector<double>(horizontal.cell(x,y),proj_y),p2d[1]);
-
-					// triangulate
-					CVector<3,double> p3d;
-					SolveStereo(p2d, matrices, p3d);
-
-					// save
-					result.push_back(p3d);
-					if (p3d[2]<0)
-						nbehind++;
-				}
+				std::cout << "Load parameters: " << i << ": " << argv[i] << std::endl;
 			}
-			if (m_debug && nbehind)
-				TRACE("\rfound %d points behind viewpoint.\n", nbehind);
+			// parse commandline options
+			int argi = set_options(argc, argv);
+
+			// horizontal and vertical correspondences between projector and camera
+			Field<2, float> horizontal, vertical, mask;
+			horizontal.Read(argv[argi++]);
+			if (m_vmapfilename)
+				vertical.Read(m_vmapfilename);
+			image::Read(mask, argv[argi++]);
+			options.load(argv[argi++]);
+			CVector<2, double>
+				cod1 = make_vector<double>((options.projector_width + 1) / 2.0, options.projector_height*options.projector_horizontal_center),
+				cod2 = (make_vector(1.0, 1.0) + mask.size()) / 2;
+
+			// intrinsic matrices of projector and camera
+			CMatrix<3, 3, double> matKpro, matKcam;
+			double xi1, xi2;
+			FILE*fr;
+			matKcam.Read(argv[argi++]);
+			fr = fopen(argv[argi++], "rb");
+			if (!fr) throw std::runtime_error("failed to open camera distortion");
+			fscanf(fr, "%lf", &xi2);
+			fclose(fr);
+			matKpro.Read(argv[argi++]);
+			fr = fopen(argv[argi++], "rb");
+			if (!fr) throw std::runtime_error("failed to open projector distortion");
+			fscanf(fr, "%lf", &xi1);
+			fclose(fr);
+
+			// extrinsic matrices of projector and camera
+			CMatrix<3, 4, double> proRt, camRt;
+			proRt.Read(argv[argi++]);
+			camRt = make_diagonal_matrix(1, 1, 1).AppendCols(make_vector(0, 0, 0));//CMatrix<3,4,double>::GetIdentity(); // reconstruction is in camera coordinate frame
+
+			// compute projection matrices of projector and camera
+			std::vector<CMatrix<3, 4, double>> matrices(2);
+			matrices[0] = matKcam * camRt; // camera
+			matrices[1] = matKpro * proRt; // projector
+
+			// fundamental matrix
+			CMatrix<3, 3, double> matR;
+			CVector<3, double> vecT;
+			matR.Initialize(proRt.ptr());
+			vecT.Initialize(proRt.ptr() + 9);
+			CMatrix<3, 3, double> matF = transpose_of(inverse_of(matKpro)) * GetSkewSymmetric(vecT) * matR * inverse_of(matKcam);
+
+			// triangulate 3d points
+			std::vector<CVector<3, double>> result;
+			for (int y = 0; y < horizontal.size(1); y++)
+			{
+				if (y % (horizontal.size(1) / 100) == 0)
+					printf("\rtriangulation: %d%% done", 100 * y / horizontal.size(1));
+
+				int nbehind = 0;
+				for (int x = 0; x < horizontal.size(0); x++)
+				{
+					if (mask.cell(x, y))
+					{
+						// 2D correspondence
+						std::vector<CVector<2, double>> p2d(2);
+
+						// camra coordinate
+						slib::fmatrix::CancelRadialDistortion(xi2, cod2, make_vector<double>(x, y), p2d[0]);
+
+						// projector coordinate
+						double proj_y;
+						if (m_vmapfilename)
+						{
+							proj_y = vertical.cell(x, y);
+						}
+						else
+						{
+							CVector<3, double> epiline = matF * GetHomogeneousVector(p2d[0]);
+							proj_y = -(epiline[0] * horizontal.cell(x, y) + epiline[2]) / epiline[1];
+						}
+						slib::fmatrix::CancelRadialDistortion(xi1, cod1, make_vector<double>(horizontal.cell(x, y), proj_y), p2d[1]);
+
+						// triangulate
+						CVector<3, double> p3d;
+						SolveStereo(p2d, matrices, p3d);
+
+						// save
+						result.push_back(p3d);
+						if (p3d[2] < 0)
+							nbehind++;
+					}
+				}
+				if (m_debug && nbehind)
+					TRACE("\rfound %d points behind viewpoint.\n", nbehind);
+			}
+			printf("\n");
+
+			// export triangular mesh in PLY format
+			WritePly(result, mask, m_plyfilename);
 		}
-		printf("\n");
-		// export triangular mesh in PLY format
-		WritePly(result, mask, m_plyfilename);
+
+
+		// ------------------camera 1--------------------
+		{
+			// output filename
+			m_plyfilename = "decoded//1mesh.ply";
+			//Yang: Debug		
+			//argv[0] = "-o";
+			argv[1] = "-t";
+			argv[2] = argv[2];
+			argv[3] = "-v";
+			argv[4] = "decoded//1v.map";
+			argv[5] = "decoded//1h.map";
+			argv[6] = "decoded//1reliable.bmp";
+			argv[7] = "decoded//1options.ini";
+			argv[8] = "decoded//1cam-intrinsic.txt";
+			argv[9] = "decoded//1cam-distortion.txt";
+			argv[10] = "decoded//1pro-intrinsic.txt";
+			argv[11] = "decoded//1pro-distortion.txt";
+			argv[12] = "decoded//1pro-extrinsic.txt";
+			argc = 13;
+
+			for (int i = 0; i < argc; i++)
+			{
+				std::cout << "Load parameters: " << i << ": " << argv[i] << std::endl;
+			}
+			// parse commandline options
+			int argi = set_options(argc, argv);
+
+			// horizontal and vertical correspondences between projector and camera
+			Field<2, float> horizontal, vertical, mask;
+			horizontal.Read(argv[argi++]);
+			if (m_vmapfilename)
+				vertical.Read(m_vmapfilename);
+			image::Read(mask, argv[argi++]);
+			options.load(argv[argi++]);
+			CVector<2, double>
+				cod1 = make_vector<double>((options.projector_width + 1) / 2.0, options.projector_height*options.projector_horizontal_center),
+				cod2 = (make_vector(1.0, 1.0) + mask.size()) / 2;
+
+			// intrinsic matrices of projector and camera
+			CMatrix<3, 3, double> matKpro, matKcam;
+			double xi1, xi2;
+			FILE*fr;
+			matKcam.Read(argv[argi++]);
+			fr = fopen(argv[argi++], "rb");
+			if (!fr) throw std::runtime_error("failed to open camera distortion");
+			fscanf(fr, "%lf", &xi2);
+			fclose(fr);
+			matKpro.Read(argv[argi++]);
+			fr = fopen(argv[argi++], "rb");
+			if (!fr) throw std::runtime_error("failed to open projector distortion");
+			fscanf(fr, "%lf", &xi1);
+			fclose(fr);
+
+			// extrinsic matrices of projector and camera
+			CMatrix<3, 4, double> proRt, camRt;
+			proRt.Read(argv[argi++]);
+			camRt = make_diagonal_matrix(1, 1, 1).AppendCols(make_vector(0, 0, 0));//CMatrix<3,4,double>::GetIdentity(); // reconstruction is in camera coordinate frame
+
+			// compute projection matrices of projector and camera
+			std::vector<CMatrix<3, 4, double>> matrices(2);
+			matrices[0] = matKcam * camRt; // camera
+			matrices[1] = matKpro * proRt; // projector
+
+			// fundamental matrix
+			CMatrix<3, 3, double> matR;
+			CVector<3, double> vecT;
+			matR.Initialize(proRt.ptr());
+			vecT.Initialize(proRt.ptr() + 9);
+			CMatrix<3, 3, double> matF = transpose_of(inverse_of(matKpro)) * GetSkewSymmetric(vecT) * matR * inverse_of(matKcam);
+
+			// triangulate 3d points
+			std::vector<CVector<3, double>> result;
+			for (int y = 0; y < horizontal.size(1); y++)
+			{
+				if (y % (horizontal.size(1) / 100) == 0)
+					printf("\rtriangulation: %d%% done", 100 * y / horizontal.size(1));
+
+				int nbehind = 0;
+				for (int x = 0; x < horizontal.size(0); x++)
+				{
+					if (mask.cell(x, y))
+					{
+						// 2D correspondence
+						std::vector<CVector<2, double>> p2d(2);
+
+						// camra coordinate
+						slib::fmatrix::CancelRadialDistortion(xi2, cod2, make_vector<double>(x, y), p2d[0]);
+
+						// projector coordinate
+						double proj_y;
+						if (m_vmapfilename)
+						{
+							proj_y = vertical.cell(x, y);
+						}
+						else
+						{
+							CVector<3, double> epiline = matF * GetHomogeneousVector(p2d[0]);
+							proj_y = -(epiline[0] * horizontal.cell(x, y) + epiline[2]) / epiline[1];
+						}
+						slib::fmatrix::CancelRadialDistortion(xi1, cod1, make_vector<double>(horizontal.cell(x, y), proj_y), p2d[1]);
+
+						// triangulate
+						CVector<3, double> p3d;
+						SolveStereo(p2d, matrices, p3d);
+
+						// save
+						result.push_back(p3d);
+						if (p3d[2] < 0)
+							nbehind++;
+					}
+				}
+				if (m_debug && nbehind)
+					TRACE("\rfound %d points behind viewpoint.\n", nbehind);
+			}
+			printf("\n");
+
+			// export triangular mesh in PLY format
+			WritePly(result, mask, m_plyfilename);
+		}
 	}
 	catch (const std::exception& e)
 	{
