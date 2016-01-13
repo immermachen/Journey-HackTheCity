@@ -34,8 +34,10 @@ save decoded data in:  D:\Journey-HackTheCity\procamtools-v1\Release\decoded
 config: D:\Journey-HackTheCity\procamtools-v1\Release\decoded\0options.ini (1options.ini)
 
 run in command: 
-calibrator.exe 0:  for camera left, and see inlines number, if small change the vertical_center = 0.55 in 0options.ini until inlines is larger.
+calibrator.exe 0:  for camera left, and see inlines number, if small change the vertical_center = 0.55 in 0options.ini until inlines is larger.=
 calibrator.exe 1:  for camera right
+
+Note: vertical_center = 0.55 is difficult thing, sometimes with or without light are different value for same position, for camera 1. 
 
 ----------------triangulate function from:----------------------
 config: D:\Journey-HackTheCity\procamtools-v1\Release\decoded\0options.ini (1options.ini)
