@@ -9,13 +9,6 @@ camera1: 0-00.bmp,0-01.bmp
 camera2: 1-00.bmp,1-01.bmp
 
 
-----------------Global Config----------------------
-copy [D:\Journey-HackTheCity\decoded and options.ini] to [D:\Journey-HackTheCity\procamtools-v1\Release\]
-
-config: D:\Journey-HackTheCity\procamtools-v1\Release\decoded\0options.ini
-config: D:\Journey-HackTheCity\procamtools-v1\Release\decoded\1options.ini
-
-
 ----------------Decode function from:----------------------
 config: D:\Journey-HackTheCity\procamtools-v1\Release\options.ini
 
@@ -34,14 +27,15 @@ save decoded data in:  D:\Journey-HackTheCity\procamtools-v1\Release\decoded
 config: D:\Journey-HackTheCity\procamtools-v1\Release\decoded\0options.ini (1options.ini)
 
 run in command: 
-calibrator.exe 0:  for camera left, and see inlines number, if small change the vertical_center = 0.55 in 0options.ini until inlines is larger.
+calibrator.exe 0:  for camera left
 calibrator.exe 1:  for camera right
 
 ----------------triangulate function from:----------------------
 config: D:\Journey-HackTheCity\procamtools-v1\Release\decoded\0options.ini (1options.ini)
 
 run in command: 
-triangulate.exe 1 10   ;the first 1 can be arbitrary letter. 10: angle. 
+triangulate.exe -t 10
+triangulate.exe 1 10   ;;;; == the first 1 can be arbitrary letter.
 
 output: D:\Journey-HackTheCity\procamtools-v1\Release\decoded\0mesh.fly (1mesh.fly)
 
